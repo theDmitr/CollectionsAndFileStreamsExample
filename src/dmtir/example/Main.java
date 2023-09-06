@@ -1,19 +1,21 @@
 package dmtir.example;
 
+import dmtir.example.comparator.PersonAgeComparator;
 import dmtir.utils.CollectionDisplay;
+import dmtir.utils.ESDBWorker;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Random;
+import java.util.*;
 
 public class Main {
 
     private static final String person_names_path = "/person_names";
 
     public static void main(String[] args) {
-        ArrayList<String> personNames = getPersonNames();
+        URL personNamesURL = Main.class.getResource(person_names_path);
+        assert personNamesURL != null;
+        ArrayList<String> personNames = ESDBWorker.GetDBLines(personNamesURL.getFile());
 
         Random random = new Random();
         int personsCount = random.nextInt(1, personNames.size());
@@ -29,22 +31,11 @@ public class Main {
             persons[i] = new Person(pName, pAge, pWeight, pHeight);
         }
 
-        CollectionDisplay.display(Arrays.asList(persons));
-    }
+        PersonAgeComparator pac = new PersonAgeComparator();
+        SortedSet<Person> ss = new TreeSet<>(pac.reversed());
+        ss.addAll(Arrays.asList(persons));
 
-    private static ArrayList<String> getPersonNames() {
-        ArrayList<String> collection = new ArrayList<>();
-
-        URL personNamesURL = Main.class.getResource(person_names_path);
-        assert personNamesURL != null;
-        try (BufferedReader br = new BufferedReader(new FileReader(personNamesURL.getFile()))) {
-            while (br.ready()) collection.add(br.readLine());
-        }
-        catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-
-        return collection;
+        CollectionDisplay.display(ss);
     }
 
 }
